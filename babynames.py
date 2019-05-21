@@ -39,13 +39,43 @@ Suggested milestones for incremental development:
 """
 
 
+def first_item(item):
+    '''key used for sorting by first item in list'''
+    return item[0]
+
+
 def extract_names(filename):
     """
     Given a file name for baby.html, returns a list starting with the year string
     followed by the name-rank strings in alphabetical order.
     ['2006', 'Aaliyah 91', Aaron 57', 'Abagail 895', ' ...]
     """
-    # +++your code here+++
+    with open(filename) as f:
+        text = f.read()
+        year = re.search(r'Popularity\sin\s(\d\d\d\d)', text)
+        # names = re.search(r'<td>(\d+)</td><td>(\w+)</td><td>(\w+)</td>', text)
+        names = re.finditer(
+            r'<td>(\d+)</td><td>(\w+)</td><td>(\w+)</td>', text)
+        names_dict = {}
+        if year:
+            found_year = year.group(1)
+        if names:
+            for matchObj in names:
+                currentRow = matchObj.group(1, 2, 3)
+                names_dict[currentRow[0]] = [currentRow[1], currentRow[2]]
+        output_list = []
+        for key in names_dict:
+            output_list.append([names_dict[key][0], key])
+            output_list.append([names_dict[key][1], key])
+
+        sorted_list = sorted(output_list, key=first_item)
+        combined_list = []
+
+        for i in sorted_list:
+            combined_list.append(" ".join(i))
+
+        return(found_year + "\n" + "\n".join(combined_list))
+
     return
 
 
@@ -73,9 +103,11 @@ def main():
     # option flag
     create_summary = args.summaryfile
 
-    # +++your code here+++
     # For each filename, get the names, then either print the text output
     # or write it to a summary file
+    for i in file_list:
+        with open(i+".summary", "w+") as f:
+            f.write(extract_names(i))
 
 
 if __name__ == '__main__':
